@@ -1,0 +1,8 @@
+# Query for entities in this area
+geometry_msgs/Point32 area_min
+geometry_msgs/Point32 area_max
+---
+EntityInfo[] entities
+
+# Empty if no errors
+string error_msg

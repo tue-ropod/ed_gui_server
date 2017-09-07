@@ -1,0 +1,9 @@
+string id
+int32 measurement_image_border
+---
+string type
+string[] property_names
+string[] property_values
+uint8[] measurement_image
+uint8[] measurement_image_unmasked
+string[] affordances
