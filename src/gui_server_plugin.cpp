@@ -81,8 +81,19 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
             msg.color.r = 255 * r;
             msg.color.g = 255 * g;
             msg.color.b = 255 * b;
-            msg.color.a = 255;
         }
+        
+        double a;
+        if (config.value("alpha", a))
+        {
+            msg.color.a = 255 * a;
+        }
+        
+        else
+	{
+	    msg.color.a = 255;
+	}
+        
         config.endGroup();
     }
 
