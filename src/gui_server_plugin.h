@@ -63,7 +63,6 @@ private:
 
 
     void entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::EntityInfo& msg);
-
 };
 
 #endif

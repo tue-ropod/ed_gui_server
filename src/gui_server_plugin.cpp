@@ -202,8 +202,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
 
 // ----------------------------------------------------------------------------------------------------
 
-bool GUIServerPlugin::srvQueryEntities(const ed_gui_server::QueryEntities::Request& ros_req,
-                                       ed_gui_server::QueryEntities::Response& ros_res)
+bool GUIServerPlugin::srvQueryEntities(const ed_gui_server::QueryEntities::Request& ros_req, ed_gui_server::QueryEntities::Response& ros_res)
 {
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {       
