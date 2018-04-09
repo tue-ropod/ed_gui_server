@@ -111,6 +111,21 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int ID, ros::Publisher& pub ) // TODO move to ed_rviz_plugins?
+{
+    visualization_msgs::Marker marker;
+
+    if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) {
+        ed::tracking::Circle circle = featureProp.getCircle();
+        circle.setMarker ( marker , ID );
+    } else {
+        ed::tracking::Rectangle rectangle = featureProp.getRectangle();
+        rectangle.setMarker ( marker , ID );
+    }
+
+    pub.publish ( marker );
+}
+
 // ----------------------------------------------------------------------------------------------------
 
 GUIServerPlugin::GUIServerPlugin()
@@ -169,6 +184,10 @@ void GUIServerPlugin::initialize(ed::InitData& init)
     srv_interact_ = nh.advertiseService(opt_srv_interact);
 
     pub_entities_ = nh.advertise<ed_gui_server::EntityInfos>("ed/gui/entities", 1);
+    
+    ObjectMarkers_pub_ = nh.advertise<visualization_msgs::Marker> ( "ed/gui/objectMarkers", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
+    
+    init.properties.registerProperty ( "Feature", featureProperties_, new FeaturPropertiesInfo );
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -188,16 +207,31 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     entities_msg.entities.resize(world_model_->numEntities());
 
     unsigned int i = 0;
+    unsigned int marker_ID = 0;
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
-        if (!e->hasFlag("self"))
-            entityToMsg(e, entities_msg.entities[i++]);
+        if ( !e->hasFlag ( "self" ) ) 
+        {
+            entityToMsg ( e, entities_msg.entities[i++] );
+        }
+
+        std::string laserID = "-laser";
+        if ( ! ( e->id().str().length() < laserID.length() ) ) 
+        {
+            if ( e->id().str().substr ( e->id().str().length() - 6 ) == laserID ) // entity described by laser
+            { 
+                ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
+                publishFeatures ( measuredProperty, marker_ID++, ObjectMarkers_pub_ );
+            }
+        }
     }
 
     robot_.getEntities(entities_msg.entities);
 
     pub_entities_.publish(entities_msg);
+    
+    
 }
 
 // ----------------------------------------------------------------------------------------------------
