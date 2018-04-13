@@ -26,6 +26,35 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+float COLORS[27][3] = { { 0.6, 0.6, 0.6},
+                        { 0.6, 0.6, 0.4},
+                        { 0.6, 0.6, 0.2},
+                        { 0.6, 0.4, 0.6},
+                        { 0.6, 0.4, 0.4},
+                        { 0.6, 0.4, 0.2},
+                        { 0.6, 0.2, 0.6},
+                        { 0.6, 0.2, 0.4},
+                        { 0.6, 0.2, 0.2},
+                        { 0.4, 0.6, 0.6},
+                        { 0.4, 0.6, 0.4},
+                        { 0.4, 0.6, 0.2},
+                        { 0.4, 0.4, 0.6},
+                        { 0.4, 0.4, 0.4},
+                        { 0.4, 0.4, 0.2},
+                        { 0.4, 0.2, 0.6},
+                        { 0.4, 0.2, 0.4},
+                        { 0.4, 0.2, 0.2},
+                        { 0.2, 0.6, 0.6},
+                        { 0.2, 0.6, 0.4},
+                        { 0.2, 0.6, 0.2},
+                        { 0.2, 0.4, 0.6},
+                        { 0.2, 0.4, 0.4},
+                        { 0.2, 0.4, 0.2},
+                        { 0.2, 0.2, 0.6},
+                        { 0.2, 0.2, 0.4},
+                        { 0.2, 0.2, 0.2}
+                      };
+
 void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::EntityInfo& msg)
 {
     ed::ErrorContext errc("entityToMsg");
@@ -114,13 +143,21 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int ID, ros::Publisher& pub ) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
+    std_msgs::ColorRGBA color;
 
+
+    int i_color = ID % 27;
+    color.r = COLORS[i_color][0];
+    color.g = COLORS[i_color][1];
+    color.b = COLORS[i_color][2];
+    color.a = ( float ) 0.5;
+    
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) {
         ed::tracking::Circle circle = featureProp.getCircle();
-        circle.setMarker ( marker , ID );
+        circle.setMarker ( marker , ID, color );
     } else {
         ed::tracking::Rectangle rectangle = featureProp.getRectangle();
-        rectangle.setMarker ( marker , ID );
+        rectangle.setMarker ( marker , ID, color );
     }
 
     pub.publish ( marker );

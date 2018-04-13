@@ -69,6 +69,8 @@ private:
 
     void entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::EntityInfo& msg);
     
+    unsigned int djb2(const std::string& str);
+    
     ros::Publisher ObjectMarkers_pub_;
     
     ed::PropertyKey<ed::tracking::FeatureProperties> featureProperties_;
