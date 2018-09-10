@@ -16,6 +16,7 @@
 
 #include "ed/convex_hull.h"
 #include "ed/convex_hull_calc.h"
+#include <visualization_msgs/MarkerArray.h>
 
 #include "ed/featureProperties_info.h"
 

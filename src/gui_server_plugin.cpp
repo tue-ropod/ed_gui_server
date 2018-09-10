@@ -222,7 +222,7 @@ void GUIServerPlugin::initialize(ed::InitData& init)
 
     pub_entities_ = nh.advertise<ed_gui_server::EntityInfos>("ed/gui/entities", 1);
     
-    ObjectMarkers_pub_ = nh.advertise<visualization_msgs::Marker> ( "ed/gui/objectMarkers", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
+    ObjectMarkers_pub_ = nh.advertise<visualization_msgs::MarkerArray> ( "ed/gui/objectMarkers", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
     // TODO standard initialization of all custom properties at all plugins?!
     
     init.properties.registerProperty ( "Feature", featureProperties_, new FeaturPropertiesInfo );
