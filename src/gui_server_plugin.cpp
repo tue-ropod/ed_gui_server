@@ -140,13 +140,13 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-visualization_msgs::Marker publishFeatures ( ed::tracking::FeatureProperties& featureProp, int ID ) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
 
 
-    int i_color = ID % 27;
+    int i_color = *ID % 27;
     color.r = COLORS[i_color][0];
     color.g = COLORS[i_color][1];
     color.b = COLORS[i_color][2];
@@ -155,15 +155,39 @@ visualization_msgs::Marker publishFeatures ( ed::tracking::FeatureProperties& fe
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         ed::tracking::Circle circle = featureProp.getCircle();
-        circle.setMarker ( marker , ID, color );
+        circle.setMarker ( marker , (*ID)++, color );
+        markers.markers.push_back( marker );
+        
+        float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
+        if( vel2 > 0.01 )
+        {
+                circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+                markers.markers.push_back( marker );
+        }
     } 
     else 
     {
         ed::tracking::Rectangle rectangle = featureProp.getRectangle();
-        rectangle.setMarker ( marker , ID, color );
+        rectangle.setMarker ( marker , (*ID)++, color );
+        markers.markers.push_back( marker );
+        
+        float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
+        if( vel2 > 0.01 )
+        {
+                rectangle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+                markers.markers.push_back( marker );
+        }
+        
+        std::cout << "Gui server: rectangle.get_yawVel() = " << rectangle.get_yawVel() << std::endl;
+        
+        
+        if( abs( rectangle.get_yawVel() ) > 0.1 )
+        {
+                rectangle.setRotationalVelocityMarker ( marker, (*ID)++ );
+                markers.markers.push_back( marker );
+        }
     }
 
-    return marker;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -254,6 +278,9 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
+        
+        std::cout << "Gui server: going to process entity with id = " << e->id() ;
+        
         if ( !e->hasFlag ( "self" ) ) 
         {
             entityToMsg ( e, entities_msg.entities[i++] );
@@ -265,7 +292,14 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
             { 
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
-                markerArray.markers.push_back( publishFeatures ( measuredProperty, marker_ID++ ) );
+                std::cout << " Measured properties found \n";
+                
+//                 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int* ID, visualization_msgs::MarkerArray& markers) 
+                publishFeatures ( measuredProperty, &marker_ID, markerArray );
+                
+                
+//                 markerArray.markers.push_back(  );
+                
             }
         }
     }
