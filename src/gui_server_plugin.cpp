@@ -140,7 +140,7 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
@@ -164,6 +164,8 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
                 circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
                 markers.markers.push_back( marker );
         }
+       
+        
     } 
     else 
     {
@@ -178,15 +180,21 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
                 markers.markers.push_back( marker );
         }
         
-        std::cout << "Gui server: rectangle.get_yawVel() = " << rectangle.get_yawVel() << std::endl;
-        
-        
-        if( abs( rectangle.get_yawVel() ) > 0.1 )
+//         std::cout << "Gui server: pub Yaw vel? yawvel =  " << rectangle.get_yawVel() << " bla = " << fabs( rectangle.get_yawVel()) << std::endl;
+//         rectangle.printValues();
+        if( fabs( rectangle.get_yawVel() ) > 0.1 )
         {
+//                 std::cout << "Pub yaw Vel " << std::endl;
                 rectangle.setRotationalVelocityMarker ( marker, (*ID)++ );
                 markers.markers.push_back( marker );
         }
     }
+    
+     if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z )
+        {
+                ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
+                exit (EXIT_FAILURE);
+        }
 
 }
 
@@ -279,7 +287,8 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     {
         const ed::EntityConstPtr& e = *it;
         
-        std::cout << "Gui server: going to process entity with id = " << e->id() ;
+        
+//         std::cout << "Gui server: going to process entity with id = " << e->id() ;
         
         if ( !e->hasFlag ( "self" ) ) 
         {
@@ -292,10 +301,10 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
             { 
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
-                std::cout << " Measured properties found \n";
+//                 std::cout << " Measured properties found \n";
                 
 //                 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int* ID, visualization_msgs::MarkerArray& markers) 
-                publishFeatures ( measuredProperty, &marker_ID, markerArray );
+                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id() );
                 
                 
 //                 markerArray.markers.push_back(  );
