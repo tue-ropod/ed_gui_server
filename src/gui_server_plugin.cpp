@@ -26,6 +26,35 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+float COLORS[27][3] = { { 0.6, 0.6, 0.6},
+                        { 0.6, 0.6, 0.4},
+                        { 0.6, 0.6, 0.2},
+                        { 0.6, 0.4, 0.6},
+                        { 0.6, 0.4, 0.4},
+                        { 0.6, 0.4, 0.2},
+                        { 0.6, 0.2, 0.6},
+                        { 0.6, 0.2, 0.4},
+                        { 0.6, 0.2, 0.2},
+                        { 0.4, 0.6, 0.6},
+                        { 0.4, 0.6, 0.4},
+                        { 0.4, 0.6, 0.2},
+                        { 0.4, 0.4, 0.6},
+                        { 0.4, 0.4, 0.4},
+                        { 0.4, 0.4, 0.2},
+                        { 0.4, 0.2, 0.6},
+                        { 0.4, 0.2, 0.4},
+                        { 0.4, 0.2, 0.2},
+                        { 0.2, 0.6, 0.6},
+                        { 0.2, 0.6, 0.4},
+                        { 0.2, 0.6, 0.2},
+                        { 0.2, 0.4, 0.6},
+                        { 0.2, 0.4, 0.4},
+                        { 0.2, 0.4, 0.2},
+                        { 0.2, 0.2, 0.6},
+                        { 0.2, 0.2, 0.4},
+                        { 0.2, 0.2, 0.2}
+                      };
+
 void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::EntityInfo& msg)
 {
     ed::ErrorContext errc("entityToMsg");
@@ -81,17 +110,20 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
             msg.color.r = 255 * r;
             msg.color.g = 255 * g;
             msg.color.b = 255 * b;
-            msg.color.a = 255;
         }
+        
+        double a;
+        if (config.value("alpha", a))
+        {
+            msg.color.a = 255 * a;
+        }
+        
+        else
+	{
+	    msg.color.a = 255;
+	}
+        
         config.endGroup();
-    }
-
-    if (e->hasFlag("highlighted"))
-    {
-        msg.color.a = 255;
-        msg.color.r = 255;
-        msg.color.g = 0;
-        msg.color.b = 0;
     }
 
     // HACK! Way of coding that this is a human
@@ -106,6 +138,64 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
         else
             msg.color.b = 5;  // possible human (based on laser)
     }
+}
+
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID) // TODO move to ed_rviz_plugins?
+{
+    visualization_msgs::Marker marker;
+    std_msgs::ColorRGBA color;
+
+
+    int i_color = *ID % 27;
+    color.r = COLORS[i_color][0];
+    color.g = COLORS[i_color][1];
+    color.b = COLORS[i_color][2];
+    color.a = ( float ) 0.5;
+    
+    if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
+    {
+        ed::tracking::Circle circle = featureProp.getCircle();
+        circle.setMarker ( marker , (*ID)++, color );
+        markers.markers.push_back( marker );
+        
+        float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
+        if( vel2 > 0.01 )
+        {
+                circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+                markers.markers.push_back( marker );
+        }
+       
+        
+    } 
+    else 
+    {
+        ed::tracking::Rectangle rectangle = featureProp.getRectangle();
+        rectangle.setMarker ( marker , (*ID)++, color );
+        markers.markers.push_back( marker );
+        
+        float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
+        if( vel2 > 0.01 )
+        {
+                rectangle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+                markers.markers.push_back( marker );
+        }
+        
+//         std::cout << "Gui server: pub Yaw vel? yawvel =  " << rectangle.get_yawVel() << " bla = " << fabs( rectangle.get_yawVel()) << std::endl;
+//         rectangle.printValues();
+        if( fabs( rectangle.get_yawVel() ) > 0.1 )
+        {
+//                 std::cout << "Pub yaw Vel " << std::endl;
+                rectangle.setRotationalVelocityMarker ( marker, (*ID)++ );
+                markers.markers.push_back( marker );
+        }
+    }
+    
+     if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z )
+        {
+                ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
+                exit (EXIT_FAILURE);
+        }
+
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -166,6 +256,11 @@ void GUIServerPlugin::initialize(ed::InitData& init)
     srv_interact_ = nh.advertiseService(opt_srv_interact);
 
     pub_entities_ = nh.advertise<ed_gui_server::EntityInfos>("ed/gui/entities", 1);
+    
+    ObjectMarkers_pub_ = nh.advertise<visualization_msgs::MarkerArray> ( "ed/gui/objectMarkers", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
+    // TODO standard initialization of all custom properties at all plugins?!
+    
+    init.properties.registerProperty ( "Feature", featureProperties_, new FeaturPropertiesInfo );
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -185,25 +280,52 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     entities_msg.entities.resize(world_model_->numEntities());
 
     unsigned int i = 0;
+    unsigned int marker_ID = 0;
+    visualization_msgs::MarkerArray markerArray;
+    
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
-        if (!e->hasFlag("self"))
-            entityToMsg(e, entities_msg.entities[i++]);
+        
+        
+//         std::cout << "Gui server: going to process entity with id = " << e->id() ;
+        
+        if ( !e->hasFlag ( "self" ) ) 
+        {
+            entityToMsg ( e, entities_msg.entities[i++] );
+        }
+
+        std::string laserID = "-laserTracking";
+        if ( ! ( e->id().str().length() < laserID.length() ) ) 
+        {
+            if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
+            { 
+                ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
+//                 std::cout << " Measured properties found \n";
+                
+//                 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int* ID, visualization_msgs::MarkerArray& markers) 
+                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id() );
+                
+                
+//                 markerArray.markers.push_back(  );
+                
+            }
+        }
     }
 
     robot_.getEntities(entities_msg.entities);
 
     pub_entities_.publish(entities_msg);
+    ObjectMarkers_pub_.publish( markerArray );
+    
 }
 
 // ----------------------------------------------------------------------------------------------------
 
-bool GUIServerPlugin::srvQueryEntities(const ed_gui_server::QueryEntities::Request& ros_req,
-                                       ed_gui_server::QueryEntities::Response& ros_res)
+bool GUIServerPlugin::srvQueryEntities(const ed_gui_server::QueryEntities::Request& ros_req, ed_gui_server::QueryEntities::Response& ros_res)
 {
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
-    {
+    {       
         const ed::EntityConstPtr& e = *it;
 
         const geo::Pose3D* pose = 0;
@@ -452,7 +574,7 @@ bool GUIServerPlugin::srvQueryMeshes(const ed_gui_server::QueryMeshes::Request& 
                     r.endArray();
                 }
             }
-        }
+        }        
     }
 
     return true;

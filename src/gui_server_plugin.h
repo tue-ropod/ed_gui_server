@@ -14,6 +14,12 @@
 
 #include "robot.h"
 
+#include "ed/convex_hull.h"
+#include "ed/convex_hull_calc.h"
+#include <visualization_msgs/MarkerArray.h>
+
+#include "ed/featureProperties_info.h"
+
 class GUIServerPlugin : public ed::Plugin
 {
 
@@ -63,7 +69,14 @@ private:
 
 
     void entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::EntityInfo& msg);
-
+    
+    unsigned int djb2(const std::string& str);
+    
+    ros::Publisher ObjectMarkers_pub_;
+    
+    ed::PropertyKey<ed::tracking::FeatureProperties> featureProperties_;
+    
+    
 };
 
 #endif

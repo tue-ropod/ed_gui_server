@@ -234,9 +234,12 @@ void entityCallback(const ed_gui_server::EntityInfos::ConstPtr& msg)
             m.color.r = (float)info.color.r / 255;
             m.color.g = (float)info.color.g / 255;
             m.color.b = (float)info.color.b / 255;
+            m.color.a = (float)info.color.a / 255 * info.existence_probability;
         }
-
-        m.color.a = info.existence_probability;
+        else
+        {
+            m.color.a = info.existence_probability;
+        }
 
         if (info.mesh_revision == 0)
         {
