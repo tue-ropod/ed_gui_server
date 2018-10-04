@@ -81,17 +81,20 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
             msg.color.r = 255 * r;
             msg.color.g = 255 * g;
             msg.color.b = 255 * b;
-            msg.color.a = 255;
         }
+        
+        double a;
+        if (config.value("alpha", a))
+        {
+            msg.color.a = 255 * a;
+        }
+        
+        else
+	{
+	    msg.color.a = 255;
+	}
+        
         config.endGroup();
-    }
-
-    if (e->hasFlag("highlighted"))
-    {
-        msg.color.a = 255;
-        msg.color.r = 255;
-        msg.color.g = 0;
-        msg.color.b = 0;
     }
 
     // HACK! Way of coding that this is a human
@@ -203,7 +206,7 @@ bool GUIServerPlugin::srvQueryEntities(const ed_gui_server::QueryEntities::Reque
                                        ed_gui_server::QueryEntities::Response& ros_res)
 {
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
-    {
+    {       
         const ed::EntityConstPtr& e = *it;
 
         const geo::Pose3D* pose = 0;
@@ -452,7 +455,7 @@ bool GUIServerPlugin::srvQueryMeshes(const ed_gui_server::QueryMeshes::Request& 
                     r.endArray();
                 }
             }
-        }
+        }        
     }
 
     return true;
