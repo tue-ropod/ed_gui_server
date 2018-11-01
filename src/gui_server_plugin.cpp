@@ -159,7 +159,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         markers.markers.push_back( marker );
         
         float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
-        if( vel2 > 0.01 )
+        if( std::sqrt( vel2 ) > 0.01 )
         {
                 circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
                 markers.markers.push_back( marker );
@@ -174,7 +174,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         markers.markers.push_back( marker );
         
         float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
-        if( vel2 > 0.01 )
+        if( std::sqrt( vel2 ) > 0.01 )
         {
                 rectangle.setTranslationalVelocityMarker ( marker , (*ID)++ );
                 markers.markers.push_back( marker );
