@@ -182,7 +182,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         
 //         std::cout << "Gui server: pub Yaw vel? yawvel =  " << rectangle.get_yawVel() << " bla = " << fabs( rectangle.get_yawVel()) << std::endl;
 //         rectangle.printValues();
-        if( fabs( rectangle.get_yawVel() ) > 0.1 )
+        if( fabs( rectangle.get_yawVel() ) > 0.01 )
         {
 //                 std::cout << "Pub yaw Vel " << std::endl;
                 rectangle.setRotationalVelocityMarker ( marker, (*ID)++ );
