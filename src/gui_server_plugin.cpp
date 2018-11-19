@@ -140,7 +140,7 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
@@ -155,6 +155,10 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         ed::tracking::Circle circle = featureProp.getCircle();
+        if( predictEntities )
+        {
+                circle.predictAndUpdatePos(dt);
+        }
         circle.setMarker ( marker , (*ID)++, color );
         markers.markers.push_back( marker );
         
@@ -164,12 +168,14 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
                 circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
                 markers.markers.push_back( marker );
         }
-       
-        
     } 
-    else 
+    else
     {
         ed::tracking::Rectangle rectangle = featureProp.getRectangle();
+        if( predictEntities )
+        {
+                rectangle.predictAndUpdatePos(dt);
+        }
         rectangle.setMarker ( marker , (*ID)++, color );
         markers.markers.push_back( marker );
         
@@ -222,6 +228,12 @@ void GUIServerPlugin::initialize(ed::InitData& init)
     if (config.value("robot_name", robot_name, tue::OPTIONAL))
     {
         robot_.initialize(robot_name);
+    }
+    
+    int i_predict_entities = 0;
+    if( config.value("predict_entities", i_predict_entities, tue::OPTIONAL) )
+    {
+            predict_entities_ = (i_predict_entities != 0);
     }
 
     ros::NodeHandle nh;
@@ -304,7 +316,8 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
 //                 std::cout << " Measured properties found \n";
                 
 //                 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int* ID, visualization_msgs::MarkerArray& markers) 
-                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id() );
+                float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();
+                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_ );
                 
                 
 //                 markerArray.markers.push_back(  );
