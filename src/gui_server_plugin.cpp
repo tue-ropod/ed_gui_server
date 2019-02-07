@@ -151,7 +151,13 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     color.g = COLORS[i_color][1];
     color.b = COLORS[i_color][2];
     color.a = ( float ) 0.5;
-    
+  
+std::cout << termcolor::blue << "Error? " << std::endl;
+std::cout << "GUI-server: pCirc " << featureProp.getFeatureProbabilities().get_pCircle() << "\t" ;
+std::cout << "GUI-server: prect " << featureProp.getFeatureProbabilities().get_pRectangle() << "\n" << termcolor::reset; 
+
+
+
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         ed::tracking::Circle circle = featureProp.getCircle();
@@ -202,6 +208,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
                 exit (EXIT_FAILURE);
         }
 
+std::cout << "Gui: End of publish features" << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -311,7 +318,13 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
         if ( ! ( e->id().str().length() < laserID.length() ) ) 
         {
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
-            { 
+            {
+//		if( !e->property ( featureProperties_ ) )
+//{
+//	continue;
+//}
+
+ 
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
 //                 std::cout << " Measured properties found \n";
                 
