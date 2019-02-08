@@ -151,12 +151,6 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     color.g = COLORS[i_color][1];
     color.b = COLORS[i_color][2];
     color.a = ( float ) 0.5;
-  
-std::cout << termcolor::blue << "Error? " << std::endl;
-std::cout << "GUI-server: pCirc " << featureProp.getFeatureProbabilities().get_pCircle() << "\t" ;
-std::cout << "GUI-server: prect " << featureProp.getFeatureProbabilities().get_pRectangle() << "\n" << termcolor::reset; 
-
-
 
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
@@ -207,8 +201,6 @@ std::cout << "GUI-server: prect " << featureProp.getFeatureProbabilities().get_p
                 ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
                 exit (EXIT_FAILURE);
         }
-
-std::cout << "Gui: End of publish features" << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -319,21 +311,18 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
         {
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
             {
-//		if( !e->property ( featureProperties_ ) )
-//{
-//	continue;
-//}
+		
+//                 if( !e->property ( featureProperties_ ) )
+//                 {
+//                        req.removeEntity ( e->id() );
+//                         continue;
+//                 }
 
  
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
-//                 std::cout << " Measured properties found \n";
-                
-//                 void publishFeatures ( ed::tracking::FeatureProperties& featureProp, int* ID, visualization_msgs::MarkerArray& markers) 
+
                 float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();
                 publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_ );
-                
-                
-//                 markerArray.markers.push_back(  );
                 
             }
         }
