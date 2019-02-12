@@ -198,6 +198,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     
      if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z )
         {
+std::cout << "marker.pose.position.x  = " << marker.pose.position.x  << " marker.pose.position.y = " << marker.pose.position.y << " marker.pose.position.z = " << marker.pose.position.z << std::endl;
                 ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
                 exit (EXIT_FAILURE);
         }
