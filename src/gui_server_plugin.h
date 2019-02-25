@@ -74,6 +74,8 @@ private:
     
     ros::Publisher ObjectMarkers_pub_;
     
+    ros::Publisher ObjectPosVel_pub_;
+    
     bool predict_entities_;
     
     ed::PropertyKey<ed::tracking::FeatureProperties> featureProperties_;

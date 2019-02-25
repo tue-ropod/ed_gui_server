@@ -22,6 +22,8 @@ add_message_files(
     Area.msg
     EntityMeshAndAreas.msg
     Polygon.msg
+    objPosVel.msg
+    objsPosVel.msg
 )
 
 add_service_files(

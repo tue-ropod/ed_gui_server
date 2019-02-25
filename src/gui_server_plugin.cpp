@@ -19,8 +19,11 @@
 #include <tue/config/reader.h>
 
 #include <ed_gui_server/EntityInfos.h>
+#include <ed_gui_server/objPosVel.h>
+#include <ed_gui_server/objsPosVel.h>
 #include <ed/serialization/serialization.h>
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <boost/filesystem.hpp>
 
@@ -140,7 +143,7 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities, ed_gui_server::objsPosVel& objsInfo) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
@@ -172,6 +175,24 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     else
     {
         ed::tracking::Rectangle rectangle = featureProp.getRectangle();
+        ed_gui_server::objPosVel objectInfo;
+        
+        objectInfo.pose.position.x = rectangle.get_x();
+        objectInfo.pose.position.y = rectangle.get_y();
+        objectInfo.pose.position.z = rectangle.get_z();
+        
+        tf2::Quaternion q_rot;
+        q_rot.setRPY(rectangle.get_roll(), rectangle.get_pitch(), rectangle.get_yaw());
+        tf2::convert(q_rot, objectInfo.pose.orientation);
+        
+        objectInfo.vel.x = rectangle.get_xVel();
+        objectInfo.vel.y = rectangle.get_yVel();
+        objectInfo.vel.z = 0.0;
+        objectInfo.depth = rectangle.get_d();
+        objectInfo.width = rectangle.get_w();
+
+        objsInfo.objects.push_back( objectInfo );
+        
         if( predictEntities )
         {
                 rectangle.predictAndUpdatePos(dt);
@@ -272,6 +293,9 @@ void GUIServerPlugin::initialize(ed::InitData& init)
     ObjectMarkers_pub_ = nh.advertise<visualization_msgs::MarkerArray> ( "ed/gui/objectMarkers", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
     // TODO standard initialization of all custom properties at all plugins?!
     
+   ObjectPosVel_pub_ = nh.advertise<ed_gui_server::objsPosVel> ( "ed/gui/objectPosVel", 3 );  // TODO transform information to message via ed/gui/entities and puplish to rviz via rviz_publisher.cpp
+    // TODO standard initialization of all custom properties at all plugins?!
+    
     init.properties.registerProperty ( "Feature", featureProperties_, new FeaturPropertiesInfo );
 }
 
@@ -294,6 +318,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     unsigned int i = 0;
     unsigned int marker_ID = 0;
     visualization_msgs::MarkerArray markerArray;
+    ed_gui_server::objsPosVel objsArray;
     
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
@@ -323,7 +348,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
 
                 float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();
-                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_ );
+                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray );
                 
             }
         }
@@ -334,6 +359,10 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     pub_entities_.publish(entities_msg);
     ObjectMarkers_pub_.publish( markerArray );
     
+    objsArray.header.stamp = ros::Time::now();
+    objsArray.header.frame_id = "/map";
+    
+    ObjectPosVel_pub_.publish ( objsArray );
 }
 
 // ----------------------------------------------------------------------------------------------------
