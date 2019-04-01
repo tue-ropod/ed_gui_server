@@ -129,6 +129,8 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
         config.endGroup();
     }
 
+
+std::cout << "Gui-server: check flags" << std::endl;
     // HACK! Way of coding that this is a human
     if (e->type() == "human" || e->hasFlag("possible_human"))
     {
@@ -326,7 +328,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
         
         
 //         std::cout << "Gui server: going to process entity with id = " << e->id() ;
-        
+       std::cout << "Gui-server: check flag self" << std::endl; 
         if ( !e->hasFlag ( "self" ) ) 
         {
             entityToMsg ( e, entities_msg.entities[i++] );
