@@ -150,13 +150,15 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
 
-
-    int i_color = *ID % 27;
-    color.r = COLORS[i_color][0];
-    color.g = COLORS[i_color][1];
-    color.b = COLORS[i_color][2];
+//     int i_color = *ID % 27;
+    color.r = COLORS[0][0];
+    color.g = COLORS[0][1];
+    color.b = COLORS[0][2];
     color.a = ( float ) 0.5;
-
+//int number = std::atoi( entityID.c_str() );
+  //  std::cout << "Going to pub entiy with id = " << entityID.c_str() << " having number = " << number << std::endl;
+    
+//      int number = std::atoi (text.c_str())
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         ed::tracking::Circle circle = featureProp.getCircle();
@@ -164,13 +166,18 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         {
                 circle.predictAndUpdatePos(dt);
         }
-        circle.setMarker ( marker , (*ID)++, color );
+
+ circle.setMarker ( marker , (*ID)++, color );
+ 
+ 
+
         markers.markers.push_back( marker );
         
         float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
         if( std::sqrt( vel2 ) > 0.01 )
         {
-                circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+//                 circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+                circle.setTranslationalVelocityMarker ( marker , (*ID)++);
                 markers.markers.push_back( marker );
         }
     } 
@@ -322,6 +329,14 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     visualization_msgs::MarkerArray markerArray;
     ed_gui_server::objsPosVel objsArray;
     
+    // delete old stuf before publishing updated markers. This prevents that old stuff is visualized.
+    visualization_msgs::MarkerArray deleteAllMarkerArray;
+    visualization_msgs::Marker deleteAllMarker;
+    deleteAllMarker.action = visualization_msgs::Marker::DELETEALL;
+    deleteAllMarkerArray.markers.push_back( deleteAllMarker );
+    ObjectMarkers_pub_.publish( deleteAllMarkerArray );
+
+    
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
@@ -360,7 +375,6 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
 
     pub_entities_.publish(entities_msg);
     ObjectMarkers_pub_.publish( markerArray );
-    
     objsArray.header.stamp = ros::Time::now();
     objsArray.header.frame_id = "/map";
     
