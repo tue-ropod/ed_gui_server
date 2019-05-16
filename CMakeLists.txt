@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   urdf
   visualization_msgs
+  ed_sensor_integration
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -44,7 +45,7 @@ catkin_package(
   # LIBRARIES bla
   # CATKIN_DEPENDS other_catkin_pkg
   # DEPENDS system_lib
-  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs
+  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs ed_sensor_integration
 )
 
 include_directories(

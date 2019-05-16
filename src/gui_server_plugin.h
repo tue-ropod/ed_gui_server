@@ -18,7 +18,8 @@
 #include "ed/convex_hull_calc.h"
 #include <visualization_msgs/MarkerArray.h>
 
-#include "ed/featureProperties_info.h"
+#include <ed_sensor_integration/properties/featureProperties_info.h>
+//#include <ed_sensor_integration/properties/feature_info.h>
 
 class GUIServerPlugin : public ed::Plugin
 {
