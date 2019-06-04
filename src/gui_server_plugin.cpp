@@ -145,7 +145,7 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities, ed_gui_server::objsPosVel& objsInfo) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities, ed_gui_server::objsPosVel& objsInfo, bool Mobidik) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
@@ -155,6 +155,13 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     color.g = COLORS[0][1];
     color.b = COLORS[0][2];
     color.a = ( float ) 0.5;
+    
+    std_msgs::ColorRGBA mobidikColor;
+    mobidikColor.r = 0;
+    mobidikColor.g = 0;
+    mobidikColor.b = 1;
+    mobidikColor.a = ( float ) 0.5;
+    
 //int number = std::atoi( entityID.c_str() );
   //  std::cout << "Going to pub entiy with id = " << entityID.c_str() << " having number = " << number << std::endl;
     
@@ -167,7 +174,7 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
                 circle.predictAndUpdatePos(dt);
         }
 
- circle.setMarker ( marker , (*ID)++, color );
+        circle.setMarker ( marker , (*ID)++, color );
  
  
 
@@ -206,7 +213,17 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         {
                 rectangle.predictAndUpdatePos(dt);
         }
-        rectangle.setMarker ( marker , (*ID)++, color );
+        
+        
+        if(Mobidik)
+        {
+                rectangle.setMarker ( marker , (*ID)++, mobidikColor ); 
+        }
+        else
+        {
+                rectangle.setMarker ( marker , (*ID)++, color );
+        }
+        
         markers.markers.push_back( marker );
         
         float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
@@ -364,8 +381,8 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
  
                 ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
 
-                float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();
-                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray );
+                float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();                
+                publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray, e->hasFlag("Mobidik") );
                 
             }
         }
