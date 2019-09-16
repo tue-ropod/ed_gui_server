@@ -189,25 +189,8 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
         }
     } 
     else
-    {
+    {     
         ed::tracking::Rectangle rectangle = featureProp.getRectangle();
-        ed_gui_server::objPosVel objectInfo;
-        
-        objectInfo.pose.position.x = rectangle.get_x();
-        objectInfo.pose.position.y = rectangle.get_y();
-        objectInfo.pose.position.z = rectangle.get_z();
-        
-        tf2::Quaternion q_rot;
-        q_rot.setRPY(rectangle.get_roll(), rectangle.get_pitch(), rectangle.get_yaw());
-        tf2::convert(q_rot, objectInfo.pose.orientation);
-        
-        objectInfo.vel.x = rectangle.get_xVel();
-        objectInfo.vel.y = rectangle.get_yVel();
-        objectInfo.vel.z = 0.0;
-        objectInfo.depth = rectangle.get_d();
-        objectInfo.width = rectangle.get_w();
-
-        objsInfo.objects.push_back( objectInfo );
         
         if( predictEntities )
         {
@@ -245,10 +228,55 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
     
      if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z )
         {
-std::cout << "marker.pose.position.x  = " << marker.pose.position.x  << " marker.pose.position.y = " << marker.pose.position.y << " marker.pose.position.z = " << marker.pose.position.z << std::endl;
+                std::cout << 
+                "marker.pose.position.x  = " << marker.pose.position.x  << 
+                " marker.pose.position.y = " << marker.pose.position.y << 
+                " marker.pose.position.z = " << marker.pose.position.z << std::endl;
+                
                 ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
                 exit (EXIT_FAILURE);
         }
+        
+      // pub all entities on rostopic  
+      
+      // First, add all rectangular properties
+      ed::tracking::Rectangle rectangle = featureProp.getRectangle();
+      ed_gui_server::objPosVel objectInfo;
+      
+      objectInfo.rectangle.probability = featureProp.getFeatureProbabilities().get_pRectangle();
+      
+      objectInfo.rectangle.pose.position.x = rectangle.get_x();
+      objectInfo.rectangle.pose.position.y = rectangle.get_y();
+      objectInfo.rectangle.pose.position.z = rectangle.get_z();
+        
+      objectInfo.rectangle.vel.x = rectangle.get_xVel();
+      objectInfo.rectangle.vel.y = rectangle.get_yVel();
+      objectInfo.rectangle.vel.z = 0.0;
+      objectInfo.rectangle.depth = rectangle.get_d();
+      objectInfo.rectangle.width = rectangle.get_w();
+      
+      tf2::Quaternion q_rot;
+      q_rot.setRPY(rectangle.get_roll(), rectangle.get_pitch(), rectangle.get_yaw());
+      tf2::convert(q_rot, objectInfo.rectangle.pose.orientation);
+      
+      objectInfo.rectangle.yawVel = rectangle.get_yawVel();
+      
+      // Now, add all circular properties
+      ed::tracking::Circle circle = featureProp.getCircle();
+
+      objectInfo.circle.probability = featureProp.getFeatureProbabilities().get_pCircle();
+      
+      objectInfo.circle.pose.position.x = circle.get_x();
+      objectInfo.circle.pose.position.y = circle.get_y();
+      objectInfo.circle.pose.position.z = circle.get_z();
+        
+      objectInfo.circle.vel.x = circle.get_xVel();
+      objectInfo.circle.vel.y = circle.get_yVel();
+      objectInfo.circle.vel.z = 0.0;
+      
+      objectInfo.circle.radius = circle.get_radius();
+
+      objsInfo.objects.push_back( objectInfo );        
 }
 
 // ----------------------------------------------------------------------------------------------------

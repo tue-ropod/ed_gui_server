@@ -24,6 +24,8 @@ add_message_files(
     Area.msg
     EntityMeshAndAreas.msg
     Polygon.msg
+    circleProperties.msg
+    rectangleProperties.msg
     objPosVel.msg
     objsPosVel.msg
 )
