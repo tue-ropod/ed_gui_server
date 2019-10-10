@@ -248,12 +248,19 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
       objectInfo.rectangle.pose.position.x = rectangle.get_x();
       objectInfo.rectangle.pose.position.y = rectangle.get_y();
       objectInfo.rectangle.pose.position.z = rectangle.get_z();
+      
+      objectInfo.rectangle.xPosStdDev = rectangle.get_P()(0,0); 
+      objectInfo.rectangle.yPosStdDev = rectangle.get_P()(1,1);
+      objectInfo.rectangle.yawStdDev = rectangle.get_P()(2,2);
         
       objectInfo.rectangle.vel.x = rectangle.get_xVel();
       objectInfo.rectangle.vel.y = rectangle.get_yVel();
       objectInfo.rectangle.vel.z = 0.0;
       objectInfo.rectangle.depth = rectangle.get_d();
       objectInfo.rectangle.width = rectangle.get_w();
+      
+      objectInfo.rectangle.widthStdDev = rectangle.get_Pdim()(0,0);
+      objectInfo.rectangle.depthStdDev = rectangle.get_Pdim()(1,1);
       
       tf2::Quaternion q_rot;
       q_rot.setRPY(rectangle.get_roll(), rectangle.get_pitch(), rectangle.get_yaw());
@@ -269,12 +276,16 @@ void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned in
       objectInfo.circle.pose.position.x = circle.get_x();
       objectInfo.circle.pose.position.y = circle.get_y();
       objectInfo.circle.pose.position.z = circle.get_z();
+      
+      objectInfo.circle.xPosStdDev = circle.get_P()(0,0);
+      objectInfo.circle.yPosStdDev = circle.get_P()(1,1);
         
       objectInfo.circle.vel.x = circle.get_xVel();
       objectInfo.circle.vel.y = circle.get_yVel();
       objectInfo.circle.vel.z = 0.0;
       
       objectInfo.circle.radius = circle.get_radius();
+      objectInfo.circle.radiusStdDev = circle.get_Pdim()(0,0);
 
       objsInfo.objects.push_back( objectInfo );        
 }
