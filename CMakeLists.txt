@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ed_gui_server)
-#set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 set(CMAKE_CXX_STANDARD 11)
 find_package(catkin REQUIRED COMPONENTS
   ed
@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   visualization_msgs
   ed_sensor_integration
+  wired
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -48,7 +49,7 @@ catkin_package(
   # LIBRARIES bla
   # CATKIN_DEPENDS other_catkin_pkg
   # DEPENDS system_lib
-  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs ed_sensor_integration
+  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs ed_sensor_integration wired
 )
 
 include_directories(

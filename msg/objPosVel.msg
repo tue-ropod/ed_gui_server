@@ -1,2 +1,3 @@
+string id
 rectangleProperties rectangle
 circleProperties circle
