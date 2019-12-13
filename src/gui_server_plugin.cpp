@@ -166,6 +166,9 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
   //  std::cout << "Going to pub entiy with id = " << entityID.c_str() << " having number = " << number << std::endl;
     
 //      int number = std::atoi (text.c_str())
+    
+    //std::cout << "ed gui server: featureProp.printValues(): " << featureProp.to() << std::endl;
+    
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         tracking::Circle circle = featureProp.getCircle();
@@ -175,9 +178,6 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
         }
 
         circle.setMarker ( marker , (*ID)++, color );
- 
- 
-
         markers.markers.push_back( marker );
         
         float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
@@ -226,12 +226,16 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
         }
     }
     
-     if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z )
-        {
+     if(marker.pose.position.x != marker.pose.position.x || marker.pose.position.y != marker.pose.position.y || marker.pose.position.z != marker.pose.position.z ||
+             marker.pose.orientation.x !=  marker.pose.orientation.x || marker.pose.orientation.y !=  marker.pose.orientation.y || marker.pose.orientation.z !=  marker.pose.orientation.z ||
+             marker.pose.orientation.w !=  marker.pose.orientation.w || marker.scale.x != marker.scale.x || marker.scale.y != marker.scale.y || marker.scale.z != marker.scale.z )
+     {
                 std::cout << 
                 "marker.pose.position.x  = " << marker.pose.position.x  << 
                 " marker.pose.position.y = " << marker.pose.position.y << 
                 " marker.pose.position.z = " << marker.pose.position.z << std::endl;
+                
+                
                 
                 ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
                 exit (EXIT_FAILURE);
@@ -397,7 +401,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
-        
+        //std::cout << "ed_gui_server: entity " << e->id() << " received." << std::endl;   
         
 //         std::cout << "Gui server: going to process entity with id = " << e->id() ;
 //       std::cout << "Gui-server: check flag self" << std::endl; 
@@ -406,11 +410,17 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
             entityToMsg ( e, entities_msg.entities[i++] );
         }
 
+     
+        
+        
         std::string laserID = "-laserTracking";
         if ( ! ( e->id().str().length() < laserID.length() ) ) 
         {
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
             {
+                    
+//                     std::cout << "ed gui server: entity described by laser, going to publish" << std::endl;
+                    
 		
 //                 if( !e->property ( featureProperties_ ) )
 //                 {
