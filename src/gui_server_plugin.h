@@ -18,7 +18,8 @@
 #include "ed/convex_hull_calc.h"
 #include <visualization_msgs/MarkerArray.h>
 
-#include "featureProperties_info.h"
+//#include "featureProperties_info.h"
+#include "ed_sensor_integration/properties/featureProperties_info.h"
 //#include <wired/include/featureProperties_info.h>
 
 class GUIServerPlugin : public ed::Plugin
@@ -79,7 +80,7 @@ private:
     
     bool predict_entities_;
     
-    ed::PropertyKey<tracking::FeatureProperties> featureProperties_;
+    ed::PropertyKey<ed::tracking::FeatureProperties> featureProperties_;
     
     
 };

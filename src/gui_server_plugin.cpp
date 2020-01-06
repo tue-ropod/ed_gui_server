@@ -145,7 +145,7 @@ void GUIServerPlugin::entityToMsg(const ed::EntityConstPtr& e, ed_gui_server::En
     }
 }
 
-void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities, ed_gui_server::objsPosVel& objsInfo, bool Mobidik) // TODO move to ed_rviz_plugins?
+void publishFeatures ( ed::tracking::FeatureProperties& featureProp, unsigned int* ID, visualization_msgs::MarkerArray& markers, ed::UUID entityID, float dt, bool predictEntities, ed_gui_server::objsPosVel& objsInfo, bool Mobidik) // TODO move to ed_rviz_plugins?
 {
     visualization_msgs::Marker marker;
     std_msgs::ColorRGBA color;
@@ -171,7 +171,7 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
     
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
-        tracking::Circle circle = featureProp.getCircle();
+        ed::tracking::Circle circle = featureProp.getCircle();
         if( predictEntities )
         {
                 circle.predictAndUpdatePos(dt);
@@ -190,7 +190,7 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
     } 
     else
     {     
-        tracking::Rectangle rectangle = featureProp.getRectangle();
+        ed::tracking::Rectangle rectangle = featureProp.getRectangle();
         
         if( predictEntities )
         {
@@ -244,7 +244,7 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       // pub all entities on rostopic  
       
       // First, add all rectangular properties
-      tracking::Rectangle rectangle = featureProp.getRectangle();
+      ed::tracking::Rectangle rectangle = featureProp.getRectangle();
       ed_gui_server::objPosVel objectInfo;
       
       objectInfo.id = entityID.str();
@@ -254,10 +254,13 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       objectInfo.rectangle.pose.position.y = rectangle.get_y();
       objectInfo.rectangle.pose.position.z = rectangle.get_z();
       
-      objectInfo.rectangle.xPosStdDev = rectangle.get_P_PosVel()(0,0); 
+      /*objectInfo.rectangle.xPosStdDev = rectangle.get_P_PosVel()(0,0); 
       objectInfo.rectangle.yPosStdDev = rectangle.get_P_PosVel()(1,1);
-      objectInfo.rectangle.yawStdDev = rectangle.get_P_PosVel()(2,2);
-        
+      objectInfo.rectangle.yawStdDev = rectangle.get_P_PosVel()(2,2);*/
+      objectInfo.rectangle.xPosStdDev = rectangle.get_P()(0,0); 
+      objectInfo.rectangle.yPosStdDev = rectangle.get_P()(1,1);
+      objectInfo.rectangle.yawStdDev = rectangle.get_P()(2,2);
+      
       objectInfo.rectangle.vel.x = rectangle.get_xVel();
       objectInfo.rectangle.vel.y = rectangle.get_yVel();
       objectInfo.rectangle.vel.z = 0.0;
@@ -274,7 +277,7 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       objectInfo.rectangle.yawVel = rectangle.get_yawVel();
       
       // Now, add all circular properties
-      tracking::Circle circle = featureProp.getCircle();
+      ed::tracking::Circle circle = featureProp.getCircle();
 
       objectInfo.circle.probability = featureProp.getFeatureProbabilities().get_pCircle();
       
@@ -282,8 +285,11 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       objectInfo.circle.pose.position.y = circle.get_y();
       objectInfo.circle.pose.position.z = circle.get_z();
       
-      objectInfo.circle.xPosStdDev = circle.get_P_PosVel()(0,0);
-      objectInfo.circle.yPosStdDev = circle.get_P_PosVel()(1,1);
+      /*objectInfo.circle.xPosStdDev = circle.get_P_PosVel()(0,0);
+      objectInfo.circle.yPosStdDev = circle.get_P_PosVel()(1,1);*/
+      
+      objectInfo.circle.xPosStdDev = circle.get_P()(0,0);
+      objectInfo.circle.yPosStdDev = circle.get_P()(1,1);
         
       objectInfo.circle.vel.x = circle.get_xVel();
       objectInfo.circle.vel.y = circle.get_yVel();
@@ -433,7 +439,7 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
  
                         if(e->property ( featureProperties_ ))
                         {
-                                        tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
+                                        ed::tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
 
                                         float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();                
                                         publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray, e->hasFlag("Mobidik") );
