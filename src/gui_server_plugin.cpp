@@ -210,9 +210,11 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
         markers.markers.push_back( marker );
         
         float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
+//         std::cout << "rect, vel2 = " << vel2 << " rectangle.get_xVel() = " << rectangle.get_xVel() << ", rectangle.get_yVel() = " << rectangle.get_yVel()<< std::endl;
         if( std::sqrt( vel2 ) > 0.01 )
         {
                 rectangle.setTranslationalVelocityMarker ( marker , (*ID)++ );
+//                 std::cout << "rectangle: setTranslationalVelocityMarker set" << std::endl;
                 markers.markers.push_back( marker );
         }
         
@@ -234,10 +236,10 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
                 "marker.pose.position.x  = " << marker.pose.position.x  << 
                 " marker.pose.position.y = " << marker.pose.position.y << 
                 " marker.pose.position.z = " << marker.pose.position.z << std::endl;
+
+                ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID  << "Properties are " << std::endl;
+                featureProp.printProperties();
                 
-                
-                
-                ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID << std::endl;
                 exit (EXIT_FAILURE);
         }
         
@@ -379,6 +381,7 @@ void GUIServerPlugin::initialize(ed::InitData& init)
 
 void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& req)
 {
+//         std::cout << "Gui server: process start." << std::endl;
     ed::ErrorContext errc("process");
 
     world_model_ = &world;
@@ -458,6 +461,8 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     objsArray.header.frame_id = "/map";
     
     ObjectPosVel_pub_.publish ( objsArray );
+    
+//             std::cout << "Gui server: process finished." << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
