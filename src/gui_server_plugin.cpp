@@ -162,13 +162,6 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
     mobidikColor.b = 1;
     mobidikColor.a = ( float ) 0.5;
     
-//int number = std::atoi( entityID.c_str() );
-  //  std::cout << "Going to pub entiy with id = " << entityID.c_str() << " having number = " << number << std::endl;
-    
-//      int number = std::atoi (text.c_str())
-    
-    //std::cout << "ed gui server: featureProp.printValues(): " << featureProp.to() << std::endl;
-    
     if ( featureProp.getFeatureProbabilities().get_pCircle() > featureProp.getFeatureProbabilities().get_pRectangle() ) 
     {
         tracking::Circle circle = featureProp.getCircle();
@@ -183,7 +176,6 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
         float vel2 = pow(circle.get_xVel(), 2.0) + pow(circle.get_yVel(), 2.0);
         if( std::sqrt( vel2 ) > 0.01 )
         {
-//                 circle.setTranslationalVelocityMarker ( marker , (*ID)++ );
                 circle.setTranslationalVelocityMarker ( marker , (*ID)++);
                 markers.markers.push_back( marker );
         }
@@ -210,19 +202,14 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
         markers.markers.push_back( marker );
         
         float vel2 = pow(rectangle.get_xVel(), 2.0) + pow(rectangle.get_yVel(), 2.0);
-//         std::cout << "rect, vel2 = " << vel2 << " rectangle.get_xVel() = " << rectangle.get_xVel() << ", rectangle.get_yVel() = " << rectangle.get_yVel()<< std::endl;
         if( std::sqrt( vel2 ) > 0.01 )
         {
                 rectangle.setTranslationalVelocityMarker ( marker , (*ID)++ );
-//                 std::cout << "rectangle: setTranslationalVelocityMarker set" << std::endl;
                 markers.markers.push_back( marker );
         }
-        
-//         std::cout << "Gui server: pub Yaw vel? yawvel =  " << rectangle.get_yawVel() << " bla = " << fabs( rectangle.get_yawVel()) << std::endl;
-//         rectangle.printValues();
+
         if( fabs( rectangle.get_yawVel() ) > 0.01 )
         {
-//                 std::cout << "Pub yaw Vel " << std::endl;
                 rectangle.setRotationalVelocityMarker ( marker, (*ID)++ );
                 markers.markers.push_back( marker );
         }
@@ -232,16 +219,12 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
              marker.pose.orientation.x !=  marker.pose.orientation.x || marker.pose.orientation.y !=  marker.pose.orientation.y || marker.pose.orientation.z !=  marker.pose.orientation.z ||
              marker.pose.orientation.w !=  marker.pose.orientation.w || marker.scale.x != marker.scale.x || marker.scale.y != marker.scale.y || marker.scale.z != marker.scale.z )
      {
-                std::cout << 
-                "marker.pose.position.x  = " << marker.pose.position.x  << 
-                " marker.pose.position.y = " << marker.pose.position.y << 
-                " marker.pose.position.z = " << marker.pose.position.z << std::endl;
-
-                ROS_FATAL( "Publishing of object with nan" ); std::cout << "Id = " << entityID  << "Properties are " << std::endl;
+                ROS_FATAL( "Publishing of object with nan" ); 
+                std::cout << "Id = " << entityID  << "Properties are " << std::endl;
                 featureProp.printProperties();
                 
                 exit (EXIT_FAILURE);
-        }
+     }
         
       // pub all entities on rostopic  
       
@@ -259,9 +242,6 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       objectInfo.rectangle.xPosStdDev = rectangle.get_P_PosVel()(0,0); 
       objectInfo.rectangle.yPosStdDev = rectangle.get_P_PosVel()(1,1);
       objectInfo.rectangle.yawStdDev = rectangle.get_P_PosVel()(2,2);
-      /*objectInfo.rectangle.xPosStdDev = rectangle.get()(0,0); 
-      objectInfo.rectangle.yPosStdDev = rectangle.get_P()(1,1);
-      objectInfo.rectangle.yawStdDev = rectangle.get_P()(2,2);*/
       
       objectInfo.rectangle.vel.x = rectangle.get_xVel();
       objectInfo.rectangle.vel.y = rectangle.get_yVel();
@@ -289,9 +269,6 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
       
       objectInfo.circle.xPosStdDev = circle.get_P_PosVel()(0,0);
       objectInfo.circle.yPosStdDev = circle.get_P_PosVel()(1,1);
-      
-      /*objectInfo.circle.xPosStdDev = circle.get_P()(0,0);
-      objectInfo.circle.yPosStdDev = circle.get_P()(1,1);*/
         
       objectInfo.circle.vel.x = circle.get_xVel();
       objectInfo.circle.vel.y = circle.get_yVel();
@@ -410,59 +387,37 @@ void GUIServerPlugin::process(const ed::WorldModel& world, ed::UpdateRequest& re
     for(ed::WorldModel::const_iterator it = world_model_->begin(); it != world_model_->end(); ++it)
     {
         const ed::EntityConstPtr& e = *it;
-        //std::cout << "ed_gui_server: entity " << e->id() << " received." << std::endl;   
-        
-//         std::cout << "Gui server: going to process entity with id = " << e->id() ;
-//       std::cout << "Gui-server: check flag self" << std::endl; 
+
         if ( !e->hasFlag ( "self" ) ) 
         {
             entityToMsg ( e, entities_msg.entities[i++] );
         }
-
      
-        
-        
         std::string laserID = "-laserTracking";
         if ( ! ( e->id().str().length() < laserID.length() ) ) 
         {
             if ( e->id().str().substr ( e->id().str().length() - laserID.length() ) == laserID ) // entity described by laser
             {
-                    
-//                     std::cout << "ed gui server: entity described by laser, going to publish" << std::endl;
-                    
-		
-//                 if( !e->property ( featureProperties_ ) )
-//                 {
-//                        req.removeEntity ( e->id() );
-//                         continue;
-//                 }
-
-//  std::cout << "GUIServerPlugin::process. featureProperties_.idx = " << featureProperties_.idx << std::endl;
-//  std::cout << "entity id() = " << e->id() << std::endl;
- 
-                        if(e->property ( featureProperties_ ))
-                        {
-                                        tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
-
-                                        float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();                
-                                        publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray, e->hasFlag("Mobidik") );
-                        }  else {
-                                std::cout << "GUI-server warn" << std::endl;
-                        }            
+                if(e->property ( featureProperties_ ))
+                {
+                    tracking::FeatureProperties measuredProperty = e->property ( featureProperties_ );
+                    float dt = ros::Time::now().toSec() - e->lastUpdateTimestamp();
+                    publishFeatures ( measuredProperty, &marker_ID, markerArray, e->id(), dt, predict_entities_, objsArray, e->hasFlag("Mobidik") );
+                }  else {
+                        std::cout << "GUI-server warn" << std::endl;
+                }            
             }
         }
     }
 
     robot_.getEntities(entities_msg.entities);
-
     pub_entities_.publish(entities_msg);
     ObjectMarkers_pub_.publish( markerArray );
+    
     objsArray.header.stamp = ros::Time::now();
     objsArray.header.frame_id = "/map";
     
     ObjectPosVel_pub_.publish ( objsArray );
-    
-//             std::cout << "Gui server: process finished." << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -567,11 +522,6 @@ bool GUIServerPlugin::srvGetEntityInfo(const ed_gui_server::GetEntityInfo::Reque
         ros_res.property_names.push_back("position");
         ros_res.property_values.push_back(ss_pose.str());
     }
-
-//    std::stringstream ss_creationTime;
-//    ss_creationTime << e->creationTime();
-//    ros_res.property_names.push_back("creation time");
-//    ros_res.property_values.push_back(ss_creationTime.str());
 
     ed::MeasurementConstPtr m = e->lastMeasurement();
     if (m)
