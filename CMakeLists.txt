@@ -60,7 +60,7 @@ add_library(ed_gui_server_plugin
   src/gui_server_plugin.cpp
   src/robot.cpp
 )
-target_link_libraries(ed_gui_server_plugin ed_multiple_hypothesis_plugin ${catkin_LIBRARIES})
+target_link_libraries(ed_gui_server_plugin wired ${catkin_LIBRARIES})
 add_dependencies(ed_gui_server_plugin ${catkin_EXPORTED_TARGETS})
 add_dependencies(ed_gui_server_plugin ${PROJECT_NAME}_generate_messages_cpp)
 
