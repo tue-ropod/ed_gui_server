@@ -49,7 +49,7 @@ catkin_package(
   # LIBRARIES bla
   # CATKIN_DEPENDS other_catkin_pkg
   # DEPENDS system_lib
-  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs ed_sensor_integration #wired
+  CATKIN_DEPENDS ed geometry_msgs message_runtime rgbd tf urdf visualization_msgs ed_sensor_integration wired
 )
 
 include_directories(
