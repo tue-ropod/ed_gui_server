@@ -219,10 +219,10 @@ void publishFeatures ( tracking::FeatureProperties& featureProp, unsigned int* I
              marker.pose.orientation.x !=  marker.pose.orientation.x || marker.pose.orientation.y !=  marker.pose.orientation.y || marker.pose.orientation.z !=  marker.pose.orientation.z ||
              marker.pose.orientation.w !=  marker.pose.orientation.w || marker.scale.x != marker.scale.x || marker.scale.y != marker.scale.y || marker.scale.z != marker.scale.z )
      {
-                ROS_FATAL( "Publishing of object with nan" ); 
-                std::cout << "Id = " << entityID  << "Properties are " << std::endl;
+              std::cout << "Id = " << entityID  << "Properties are " << std::endl;
                 featureProp.printProperties();
-                
+                ROS_FATAL( "Publishing of object with nan" ); 
+               
                 exit (EXIT_FAILURE);
      }
         
